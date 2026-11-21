@@ -249,13 +249,20 @@ impl Editor {
     fn selected_node(&self) -> Option<NodeRef> {
         // TODO 3.1: Clone the strong selected Rc, if any.
         // TODO 3.2: selected becomes Option<NodeWeak>; upgrade() it here.
+        if let Some(selected_strong) = &self.selected {
+            return Some(selected_strong.clone());
+        }
         None
     }
 
     pub fn select(&mut self, name: &str) -> bool {
         // TODO 3.1: Find only in SCENE; selected = Some(strong Rc).
         // TODO 3.2: Store Rc::downgrade(&node) instead.
-        let _ = name;
+        let node = self.find_in_scene(name);
+        if let Some(node) = node {
+            self.selected = Some(node);
+            return true;
+        }
         false
     }
 
@@ -264,7 +271,13 @@ impl Editor {
         // - If selected is None: "NO_SELECTION"
         // - If selected_node() fails: "EXPIRED"
         // - Otherwise: "SELECTED <name>" (do not find by name again).
-        "TODO info".to_string()
+        if self.selected.is_none() {
+            return "NO_SELECTION".to_string();
+        }
+        if let Some(node) = self.selected_node() {
+            return format!("SELECTED {}", node.borrow().name);
+        }
+        "EXPIRED".to_string()
     }
 
     pub fn delete_selected(&mut self) -> bool {
@@ -272,6 +285,16 @@ impl Editor {
         // Reject root/detached nodes. Detach, then print
         // "AFTER_DETACH <name>" while the local Rc is still alive.
         // Leave selected unchanged to contrast 3.1 with 3.2.
+        if let Some(node) = self.selected_node() {
+            if Rc::ptr_eq(&node, &self.root) {
+                return false;
+            }
+            if !Self::detach_from_parent(&node) {
+                return false;
+            }
+            println!("AFTER_DETACH {}", node.borrow().name);
+            return true;
+        }
         false
     }
 
@@ -279,13 +302,28 @@ impl Editor {
         // TODO 3.1/3.2: selected_node(), then detach from scene.
         // Assign Rc to clipboard BEFORE releasing other owners.
         // Selection stays unchanged. Replacing clipboard drops its old contents.
+        if let Some(node) = self.selected_node() {
+            if Rc::ptr_eq(&node, &self.root) {
+                return false;
+            }
+            if !Self::detach_from_parent(&node) {
+                return false;
+            }
+            self.clipboard = Some(node);
+            return true;
+        }
         false
     }
 
     pub fn paste(&mut self, new_parent: &str) -> bool {
         // TODO 3.1/3.2: Attach clipboard under an existing scene parent,
         // then set clipboard to None.
-        let _ = new_parent;
+        if let Some(parent) = self.find_in_scene(new_parent) {
+            if let Some(node) = self.clipboard.take() {
+                Self::attach(&parent, &node);
+                return true;
+            }
+        }
         false
     }
 

@@ -161,14 +161,17 @@ bool Editor::erase(const std::string& name) {
 NodeRef Editor::selected_node() const {
     // TODO 3.1: Return a strong pointer to the selection (or nullptr).
     // TODO 3.2: selected_ becomes optional<NodeWeak>; lock() it here.
-    return nullptr;
+    if (!selected_) return nullptr;
+    return *selected_;
 }
 
 bool Editor::select(const std::string& name) {
     // TODO 3.1: Find only in SCENE; store the strong NodeRef in selected_.
     // TODO 3.2: Store a weak pointer instead. Don't retain an owning reference.
-    (void)name;
-    return false;
+    auto node = find_in_scene(name);
+    if (!node) return false;
+    selected_ = node;
+    return true;
 }
 
 std::string Editor::info() const {
@@ -176,7 +179,10 @@ std::string Editor::info() const {
     // - If selected_ is empty: "NO_SELECTION"
     // - If selected_node() fails: "EXPIRED"
     // - Otherwise: "SELECTED <name>" (do not find it again by name).
-    return "TODO info";
+    if (!selected_) return "NO_SELECTION";
+    auto node = selected_node();
+    if (!node) return "EXPIRED";
+    return "SELECTED " + node->name;
 }
 
 bool Editor::delete_selected() {
@@ -184,21 +190,33 @@ bool Editor::delete_selected() {
     // Reject root or detached nodes. Detach, then output
     // "AFTER_DETACH <name>" while the local strong reference is still alive.
     // Leave selected_ unchanged so Part 3.1 and 3.2 have different outcomes.
-    return false;
+    auto node = selected_node();
+    if(!node || node == root_) return false;
+    if(!detach_from_parent(node)) return false;
+    std::cout << "AFTER_DETACH " << node->name << std::endl;
+    return true;
 }
 
 bool Editor::cut() {
     // TODO 3.1/3.2: selected_node(), then detach from scene.
     // Move/assign strong ownership to clipboard_ BEFORE releasing other owners.
     // Selection remains unchanged. Replacing clipboard drops its old contents.
-    return false;
+    auto node = selected_node();
+    if(!node || node == root_) return false;
+    if(!detach_from_parent(node)) return false;
+    clipboard_ = node;
+    return true;
 }
 
 bool Editor::paste(const std::string& new_parent) {
     // TODO 3.1/3.2: Attach clipboard root under an existing scene parent.
     // Afterwards, clear clipboard_. Names remain unique because add() checks it.
-    (void)new_parent;
-    return false;
+    auto parent = find_in_scene(new_parent);
+    if(!parent) return false;
+    if(!clipboard_) return false;
+    attach(parent, clipboard_);
+    clipboard_.reset();
+    return true;
 }
 
 void Editor::unselect() { selected_.reset(); } // Supplied: works in both stages.
