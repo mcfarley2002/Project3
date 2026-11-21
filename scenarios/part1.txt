@@ -1,0 +1,11 @@
+# Part 1: world coordinates are sums of local coordinates.
+add root panel 10 10 100 100
+add panel button 5 5 20 20
+add root badge 25 15 4 6
+worldpos button
+intersects button badge
+move badge 20 0
+intersects button badge
+intersects button button
+tree
+quit

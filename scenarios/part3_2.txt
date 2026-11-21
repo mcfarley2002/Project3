@@ -1,0 +1,15 @@
+# Part 3.2: weak selection expires unless another owner (clipboard) holds the node.
+add root panel 0 0 80 80
+add panel button 4 4 12 12
+select button
+delete-selected
+info
+unselect
+info
+select panel
+cut
+info
+clear-clipboard
+info
+unselect
+quit

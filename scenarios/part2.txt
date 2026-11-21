@@ -1,0 +1,11 @@
+# Part 2: mutable aliasing and subtree destruction.
+add root group 10 10 100 100
+add group a 1 1 10 10
+add root b 30 30 4 4
+swap a b
+worldpos a
+worldpos b
+swap a a
+erase group
+tree
+quit
