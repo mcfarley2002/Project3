@@ -63,7 +63,7 @@ private:
 
     // STARTING DESIGN FOR PART 3.1: selection keeps its node alive.
     // PART 3.2: change NodeRef to NodeWeak, then adjust selected_node().
-    std::optional<NodeRef> selected_;
+    std::optional<NodeWeak> selected_;
     NodeRef clipboard_;
 
     // Already implemented: looking up a node temporarily takes a strong reference.

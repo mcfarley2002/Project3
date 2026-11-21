@@ -47,7 +47,7 @@ pub struct Editor {
 
     // STARTING DESIGN FOR PART 3.1: selection keeps its node alive.
     // PART 3.2: change NodeRef to NodeWeak, then adjust selected_node().
-    selected: Option<NodeRef>,
+    selected: Option<NodeWeak>,
     clipboard: Option<NodeRef>,
 }
 
@@ -249,18 +249,20 @@ impl Editor {
     fn selected_node(&self) -> Option<NodeRef> {
         // TODO 3.1: Clone the strong selected Rc, if any.
         // TODO 3.2: selected becomes Option<NodeWeak>; upgrade() it here.
-        if let Some(selected_strong) = &self.selected {
-            return Some(selected_strong.clone());
+        if let Some(selected_weak) = &self.selected {
+            if let Some(selected_strong) = selected_weak.upgrade() {
+                return Some(selected_strong);
+            }
         }
         None
-    }
+    }   
 
     pub fn select(&mut self, name: &str) -> bool {
         // TODO 3.1: Find only in SCENE; selected = Some(strong Rc).
         // TODO 3.2: Store Rc::downgrade(&node) instead.
         let node = self.find_in_scene(name);
         if let Some(node) = node {
-            self.selected = Some(node);
+            self.selected = Some(Rc::downgrade(&node));
             return true;
         }
         false

@@ -162,7 +162,8 @@ NodeRef Editor::selected_node() const {
     // TODO 3.1: Return a strong pointer to the selection (or nullptr).
     // TODO 3.2: selected_ becomes optional<NodeWeak>; lock() it here.
     if (!selected_) return nullptr;
-    return *selected_;
+    return selected_->lock();
+    
 }
 
 bool Editor::select(const std::string& name) {
