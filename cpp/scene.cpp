@@ -123,8 +123,13 @@ std::optional<bool> Editor::intersects(const std::string& a, const std::string& 
 
 void Editor::swap_local(Node& a, Node& b) {
     // TODO 2: Swap local x/y through TWO mutable C++ references.
-    std::swap(a.rect.x, b.rect.x);
-    std::swap(a.rect.y, b.rect.y);
+    const auto temp_x = a.rect.x;
+    const auto temp_y = a.rect.y;
+
+    a.rect.x = b.rect.x;
+    a.rect.y = b.rect.y;
+    b.rect.x = temp_x;
+    b.rect.y = temp_y;
 }
 
 bool Editor::swap_positions(const std::string& a, const std::string& b) {
