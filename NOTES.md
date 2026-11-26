@@ -106,11 +106,6 @@ Allowing nodes to exist beyond detachment and the GUI's representation can allow
 
 ### Prompt 3.2 — Weak selection and promotion
 
-Why does a weak selection need to be promoted
-to strong before use, even in a single-threaded program? In delete-selected,
-what precisely keeps the node alive after its parent removes it? Compare the lifetime guarantees and borrowing guarantees of shared_ptr and
-Rc<RefCell<T>>.
-
 Weak pointers are helpful for determing whether an object exists or whether it can be upgraded, but it doesn't:
 - Own the node it points to (parent)
 - The node may not be upgradable after detachment and release.
